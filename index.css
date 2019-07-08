@@ -1,0 +1,22 @@
+body {
+  padding-top: 5rem;
+}
+.starter-template {
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.aries-controls {
+    margin-bottom: 1em;
+}
+
+main {
+    margin-bottom: 1em;
+}
+
+#jsoneditor {
+    width: 100%;
+    height: -webkit-calc(100vh - 150px);
+    height: -moz-calc(100vh - 150px);
+    height: calc(100vh - 150px);
+}

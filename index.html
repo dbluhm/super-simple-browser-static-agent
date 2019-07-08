@@ -2,11 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-      <script src="lib/browser-polyfill-0.4.0.js"></script>
-    <!-- Bootstrap core CSS -->
+    <script src="lib/browser-polyfill-0.4.0.js"></script>
     <link href="browser-extension/lib/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom styles for extension -->
-    <link href="browser-extension/indy.css" rel="stylesheet">
+    <link href="index.css" rel="stylesheet">
+    <link href="lib/jsoneditor.min.css" rel="stylesheet">
   </head>
 
   <body>
@@ -15,26 +14,50 @@
       <a class="navbar-brand" href="#">Aries Static Agent</a>
     </nav>
 
-    <main role="main" class="container">
-        <div id="inputs">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Public Key</span>
+    <main role="main" class="container-fluid">
+        <div id="connect" hidden=true>
+            <div class="form-group">
+                <label for="endpoint">Full Agent Endpoint:</label>
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">http://</div>
+                    </div>
+                    <input id="endpoint" class="form-control form-control-lg" type="text" placeholder="www.example.com/agent"/>
                 </div>
-                <input type="text" class="form-control" id="public-key">
-                <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" id="copy-public-key">Copy</button>
-                </span>
+            </div>
+            <div class="form-group">
+                <label for="endpoint">Full Agent Verkey:</label>
+                <div class="input-group mb-2">
+                    <input id="vk" class="form-control form-control-lg" type="text" placeholder="<base58 encoded vk>"/>
+                </div>
+            </div>
+            <button id="connect-btn" class="btn btn-primary" type="button">Connect</button>
+        </div>
+        <div id="editor" hidden=true>
+            <div class="row">
+                <div class="col-sm-8">
+                    <div id="jsoneditor"></div>
+                    <div class="input-group">
+                        <input id="message-name" type="text" class="form-control" placeholder="Message name (defaults to type)" aria-label="Message name (defaults to type)" aria-describedby="basic-addon2">
+                        <div class="input-group-append">
+                            <button id="save-and-send" class="btn btn-outline-primary" type="button">Save and Send</button>
+                            <button id="save" class="btn btn-outline-secondary" type="button">Save</button>
+                            <button id="send" class="btn btn-outline-secondary" type="button">Send</button>
+                            <button id="clear" class="btn btn-outline-secondary" type="button">Clear</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="message-list" class="col-sm-4">
+                    <h4>Saved Messages</h4>
+                    <ul id="saved-messages" class="list-group">
+                    </ul>
+                </div>
             </div>
         </div>
-        <div id="controls">
-            <button class="indy-controls mx-auto btn btn-primary" type="button" id="generate-keys">Generate Key</button>
-            <button class="indy-controls mx-auto btn btn-secondary" type="button" id="remove-keys">Remove Keys</button>
-        </div>
-    </main><!-- /.container -->
-
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
+    </main>
     <script src="browser-extension/lib/bootstrap.min.js"></script>
+    <script src="lib/jsoneditor.min.js"></script>
+    <script src="lib/aries-didcomm.js"></script>
+    <script src="index.js"></script>
   </body>
 </html>

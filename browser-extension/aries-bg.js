@@ -106,6 +106,7 @@ async function pack_message(message){
 }
 async function unpack_message(message){
     keys = getKeys();
+    console.log(keys);
     unpacked = await crypto_call({"method":"unpack_message", "message":message.message, "keys":keys});
     return unpacked;
 }
