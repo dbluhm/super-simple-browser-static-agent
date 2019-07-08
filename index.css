@@ -20,3 +20,13 @@ main {
     height: -moz-calc(100vh - 150px);
     height: calc(100vh - 150px);
 }
+
+#message-list {
+    overflow-y: auto;
+    height: -webkit-calc(100vh - 150px);
+    height: -moz-calc(100vh - 150px);
+    height: calc(100vh - 150px);
+}
+#saved-messages {
+    padding-right: 1em;
+}

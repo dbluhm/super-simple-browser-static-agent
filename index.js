@@ -2,9 +2,15 @@ var editor = null;
 var lastActiveListItem = null;
 var ws = null;
 var vk = null;
-var encoder = new TextEncoder('ascii');
 
+// Crypto messaging
 crypto.ping();
+crypto.register_pack_cb(function(message) {
+    ws.send(message);
+});
+crypto.register_unpack_cb(function(message) {
+    console.log("Recv:", JSON.parse(message.message));
+});
 
 function showConnect() {
     let connect_view = document.getElementById("connect");
@@ -21,61 +27,62 @@ function showEditor() {
     editor_view.hidden = false;
 }
 
+function hideEditor() {
+    let editor_view = document.getElementById("editor");
+    editor_view.hidden = true;
+}
+
 function onConnect() {
     hideConnect();
 
-    // Setup json editor
-    let container = document.getElementById("jsoneditor");
-    let options = {
-        mode: 'code',
-        modes: ['code', 'text', 'tree'], // allowed modes
-        onError: function (err) {
-            alert(err.toString());
-        },
-        onModeChange: function (newMode, oldMode) {
-            console.log('Mode switched from', oldMode, 'to', newMode);
-        }
-    };
-    editor = new JSONEditor(container, options);
+    if (!editor) {
+        // Setup json editor
+        let container = document.getElementById("jsoneditor");
+        let options = {
+            mode: 'code',
+            modes: ['code', 'text', 'tree'], // allowed modes
+            onError: function (err) {
+                alert(err.toString());
+            },
+            onModeChange: function (newMode, oldMode) {
+                console.log('Mode switched from', oldMode, 'to', newMode);
+            }
+        };
+        editor = new JSONEditor(container, options);
+    }
     showEditor();
 
     // Connect WS
     let endpoint = document.getElementById('endpoint').value;
     vk = document.getElementById('vk').value;
     ws = new WebSocket('ws://' + endpoint);
-    ws.addEventListener('open', function(event){
-        console.log('Websocket opened to endpoint');
-    });
     ws.addEventListener('message', function(event) {
         crypto.unpack_message(event.data);
     });
-    crypto.register_pack_cb(function(message) {
-        console.log("Packed message:", message);
-        ws.send(message);
-    });
-    crypto.register_unpack_cb(function(message) {
-        console.log(JSON.parse(message.message));
-    });
-    crypto.pack_message(
-        JSON.stringify({
+    ws.addEventListener('open', function(event){
+        console.log('Websocket opened to agent');
+        sendMessage({
             "@type": "test/protocol/1.0/ping",
             "~transport": {
                 "return_route": "all"
             }
-        }),
-        vk
-    );
+        });
+    });
+    ws.addEventListener('close', function(event) {
+        console.log('Websocket closed, returning to connect');
+        hideEditor();
+        showConnect();
+    });
 }
 
 function sendMessage(msg){
     //decorate message as necessary
     msg.id = (new Date()).getTime(); // ms since epoch
 
+    console.log("Send:", msg);
     if (crypto.extension_exists) {
-        console.log("Packing message: ", msg);
         crypto.pack_message(JSON.stringify(msg), vk);
     } else {
-        console.log("sending message", msg);
         ws.send(JSON.stringify(msg));
     }
 }
@@ -90,18 +97,16 @@ function saveMessage(msg, name) {
     lastActiveListItem = li;
     li.setAttribute('class', 'list-group-item active');
     li.setAttribute('data', JSON.stringify(msg));
-    li.onclick = onSavedMessageClick;
+    li.onclick = function(event) {
+        let li = event.target;
+        li.setAttribute('class', 'list-group-item active');
+        if (lastActiveListItem != null && lastActiveListItem != li) {
+            lastActiveListItem.setAttribute('class', 'list-group-item');
+        }
+        lastActiveListItem = li;
+        editor.set(JSON.parse(li.getAttribute('data')));
+    };
     savedMessages.appendChild(li);
-}
-
-function onSavedMessageClick(event) {
-    let li = event.target;
-    li.setAttribute('class', 'list-group-item active');
-    if (lastActiveListItem != null) {
-        lastActiveListItem.setAttribute('class', 'list-group-item');
-    }
-    lastActiveListItem = li;
-    editor.set(JSON.parse(li.getAttribute('data')));
 }
 
 function onSave() {
@@ -120,6 +125,17 @@ function onSend() {
     sendMessage(editor.get());
 }
 
+function onSaveAndSend() {
+    onSave();
+    onSend();
+}
+
+function onClear() {
+    editor.set({});
+    lastActiveListItem.setAttribute('class', 'list-group-item');
+    lastActiveListItem = null;
+}
+
 function main() {
     showConnect();
 }
@@ -128,3 +144,5 @@ window.onload = main;
 document.getElementById("connect-btn").onclick = onConnect;
 document.getElementById("save").onclick = onSave;
 document.getElementById("send").onclick = onSend;
+document.getElementById("save-and-send").onclick = onSaveAndSend;
+document.getElementById("clear").onclick = onClear;
